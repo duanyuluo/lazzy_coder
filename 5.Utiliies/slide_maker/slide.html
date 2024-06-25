@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>Lazzy Coder Programming Lesson</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #ccc;
+            font-family: Arial, sans-serif;
+        }
+        .content {
+            margin: 0 auto;
+            width: 80%;
+            padding: 20px;
+        }
+        .title {
+            text-align: center;
+            font-size: 2em;
+        }
+        .subtitle {
+            text-align: left;
+            font-size: 1.5em;
+        }
+        .code-block {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            position: relative;
+        }
+        .line-number {
+            position: absolute;
+            left: -40px;
+            color: #888;
+        }
+        .diff-insert {
+            background-color: #4caf50;
+        }
+        .diff-delete {
+            background-color: #f44336;
+        }
+        .diff-change {
+            background-color: #ffeb3b;
+        }
+        .footer {
+            text-align: center;
+            font-style: italic;
+            font-size: 0.8em;
+        }
+        .nav-button {
+            margin: 5px;
+            padding: 10px;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div class="title" id="page-title">Lazzy Coder Programming Lesson</div>
+        <div id="page-content"></div>
+        <div class="footer">
+            Lazzy Coder Programming Lesson | Author: Ryan
+            <br>
+            <a href="http://lazzycoder.com" style="color: #ccc;">Homepage</a>
+        </div>
+    </div>
+    <div class="navigation">
+        <button class="nav-button" onclick="goToPage('previous')">上一页</button>
+        <button class="nav-button" onclick="goToPage('next')">下一页</button>
+        <button class="nav-button" onclick="goToPage('first')">第一页</button>
+        <select id="language-select" onchange="switchLanguage()">
+            <option value="zh">中文</option>
+            <option value="en">English</option>
+            <option value="fr">Français</option>
+        </select>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/diff2html/3.4.14/diff2html.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/diff2html/3.4.14/diff2html.min.css">
+    <script>
+        const slides = [
+            {
+                title: "first step: startup",
+                content: `
+                    <div class="subtitle">basic knowledge</div>
+                    <div class="subtitle">example code</div>
+                    <pre class="code-block" data-lang="python" data-filename="hello.py">
+                        <code>print "Hello World"</code>
+                    </pre>
+                `
+            },
+            {
+                title: "second step: function",
+                content: `
+                    <div class="subtitle">for multi-use</div>
+                    <pre class="code-block" data-lang="python" data-filename="hello.py">
+                        <code>
+                            print "Hello World"
+                            def say_hi():
+                                print "Hello World"
+                        </code>
+                    </pre>
+                `
+            }
+        ];
+
+        let currentPage = 0;
+
+        function renderPage() {
+            const slide = slides[currentPage];
+            document.getElementById('page-title').innerText = slide.title;
+            document.getElementById('page-content').innerHTML = slide.content;
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightBlock(block);
+                addLineNumbers(block);
+            });
+            highlightDiff();
+        }
+
+        function goToPage(direction) {
+            if (direction === 'previous' && currentPage > 0) {
+                currentPage--;
+            } else if (direction === 'next' && currentPage < slides.length - 1) {
+                currentPage++;
+            } else if (direction === 'first') {
+                currentPage = 0;
+            }
+            renderPage();
+        }
+
+        function switchLanguage() {
+            const lang = document.getElementById('language-select').value;
+            // Implement language switch logic
+        }
+
+        function addLineNumbers(block) {
+            const lines = block.innerHTML.split('\n');
+            block.innerHTML = lines.map((line, index) => `
+                <span class="line-number">${index + 1}</span>${line}
+            `).join('\n');
+        }
+
+        function highlightDiff() {
+            if (currentPage > 0) {
+                const prevCode = slides[currentPage - 1].content.match(/<code>([\s\S]*?)<\/code>/)[1].trim();
+                const currCode = slides[currentPage].content.match(/<code>([\s\S]*?)<\/code>/)[1].trim();
+                const prevLines = prevCode.split('\n');
+                const currLines = currCode.split('\n');
+                const diff = Diff.diffLines(prevCode, currCode);
+
+                let highlightedCode = '';
+                diff.forEach(part => {
+                    const color = part.added ? 'diff-insert' :
+                                  part.removed ? 'diff-delete' : 'diff-change';
+                    highlightedCode += `<span class="${color}">${part.value}</span>`;
+                });
+
+                document.querySelector('.code-block code').innerHTML = highlightedCode;
+
+                setTimeout(() => {
+                    document.querySelectorAll('.diff-insert, .diff-delete, .diff-change').forEach(element => {
+                        element.style.animation = 'none';
+                    });
+                }, 5000);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            renderPage();
+        });
+
+    </script>
+</body>
+</html>
